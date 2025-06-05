@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Steganography - Hide Your Secrets</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-particles" id="particles"></div>
+    
+    <!-- Floating Shapes -->
+    <div class="floating-elements">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+
+    <!-- Dark Geometric Background -->
+    <div class="geometric-bg">
+        <div class="geo-shape geo-1"></div>
+        <div class="geo-shape geo-2"></div>
+        <div class="geo-shape geo-3"></div>
+        <div class="geo-shape geo-4"></div>
+        <div class="geo-shape geo-5"></div>
+    </div>
+
+    <div class="main-content">
+        <h1>Steganography</h1>
+
+        <div class="container">
+            <div class="container-content">
+                <h2>🔒 Encrypt Text into Image</h2>
+                <form id="encryptForm">
+                    <div class="form-group">
+                        <input type="file" name="image" accept="image/*" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea name="text" placeholder="Enter your secret message..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn">Encrypt Message</button>
+                </form>
+                <a id="downloadLink" class="btn btn-secondary" style="display:none">Download Encoded Image</a>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="container-content">
+                <h2>🔓 Decrypt Text from Image</h2>
+                <form id="decryptForm">
+                    <div class="form-group">
+                        <input type="file" name="image" accept="image/*" required>
+                    </div>
+                    <button type="submit" class="btn btn-secondary">Decrypt Message</button>
+                </form>
+                <div id="decodedText" style="display:none"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create elegant floating particles with darker blue theme
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 40;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 30 + 's';
+                particle.style.animationDuration = (Math.random() * 20 + 25) + 's';
+                
+                // Add random size variation for elegance
+                const size = Math.random() * 2 + 1;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                
+                container.appendChild(particle);
+            }
+        }
+
+        // Create dark blue geometric shapes
+        function createGeometricShapes() {
+            const shapes = document.querySelectorAll('.geo-shape');
+            shapes.forEach((shape, index) => {
+                const size = Math.random() * 150 + 50;
+                shape.style.width = size + 'px';
+                shape.style.height = size + 'px';
+                shape.style.left = Math.random() * 100 + '%';
+                shape.style.top = Math.random() * 100 + '%';
+                shape.style.animationDelay = (index * 2) + 's';
+            });
+        }
+
+        // Initialize particles and shapes
+        createParticles();
+        createGeometricShapes();
+
+        // Enhanced form handling with blue theme animations
+        document.getElementById('encryptForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const button = this.querySelector('button');
+            const originalText = button.textContent;
+            
+            button.innerHTML = '<span class="processing">Processing...</span>';
+            button.disabled = true;
+            
+            try {
+                const formData = new FormData(this);
+                const res = await fetch('/encrypt', { method: 'POST', body: formData });
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                
+                const downloadLink = document.getElementById('downloadLink');
+                downloadLink.href = url;
+                downloadLink.download = 'encoded_image.png';
+                downloadLink.style.display = 'inline-block';
+                downloadLink.textContent = '📥 Download Encoded Image';
+                
+                // Success animation with blue theme
+                button.style.background = 'linear-gradient(135deg, #1e3a5f, #2d5aa0)';
+                button.textContent = '✅ Success!';
+                
+                setTimeout(() => {
+                    button.style.background = '';
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }, 2000);
+                
+            } catch (error) {
+                button.style.background = 'linear-gradient(135deg, #4a2d3d, #5f3a4a)';
+                button.textContent = '❌ Error!';
+                button.disabled = false;
+                
+                setTimeout(() => {
+                    button.style.background = '';
+                    button.textContent = originalText;
+                }, 2000);
+            }
+        };
+
+        document.getElementById('decryptForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const button = this.querySelector('button');
+            const originalText = button.textContent;
+            const resultDiv = document.getElementById('decodedText');
+            
+            button.innerHTML = '<span class="processing">Decrypting...</span>';
+            button.disabled = true;
+            
+            try {
+                const formData = new FormData(this);
+                const res = await fetch('/decrypt', { method: 'POST', body: formData });
+                const json = await res.json();
+                
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `
+                    <strong>🔓 Decoded Message:</strong><br>
+                    ${json.decoded_text || json.error}
+                `;
+                
+                // Success animation with blue theme
+                button.style.background = 'linear-gradient(135deg, #1e3a5f, #2d5aa0)';
+                button.textContent = '✅ Decrypted!';
+                
+                setTimeout(() => {
+                    button.style.background = '';
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }, 2000);
+                
+            } catch (error) {
+                button.style.background = 'linear-gradient(135deg, #4a2d3d, #5f3a4a)';
+                button.textContent = '❌ Error!';
+                button.disabled = false;
+                
+                setTimeout(() => {
+                    button.style.background = '';
+                    button.textContent = originalText;
+                }, 2000);
+            }
+        };
+
+        // Add smooth scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add intersection observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeIn 0.8s ease forwards';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.container').forEach(container => {
+            observer.observe(container);
+        });
+    </script>
+</body>
+</html>
