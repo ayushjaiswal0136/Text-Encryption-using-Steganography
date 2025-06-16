@@ -59,7 +59,7 @@ pip install -r requirements.txt
 bash
 Copy
 Edit
-python main.py
+python app.py
 Open your browser and visit: http://localhost:5000
 
 📸 Demo
